@@ -5,7 +5,7 @@ export default function GameListItem({
     imageUrl,
 }) {
 
-    return (
+return (
         <div className="allGames">
             <div className="allGames-info">
                 <img src={imageUrl} />
