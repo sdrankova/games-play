@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
 import * as authService from './services/authService';
-import AuthContext from './contexts/authContext';
+import { AuthProvider } from './contexts/authContext';
 import Path from './paths';
 
 import Header from "./components/header/Header";
@@ -28,7 +28,7 @@ function App() {
         setAuth(result);
 
         localStorage.setItem('accessToken', result.accessToken);
-        
+
         navigate(Path.Home);
     };
 
@@ -36,7 +36,7 @@ function App() {
         const result = await authService.register(values.email, values.password);
 
         setAuth(result);
-        
+
         localStorage.setItem('accessToken', result.accessToken);
 
         navigate(Path.Home);
@@ -57,8 +57,8 @@ function App() {
     };
 
     return (
-        <div id="box">
-            <AuthContext.Provider value={values}>
+        <AuthProvider value={values}>
+            <div id="box">
                 <Header />
 
                 <Routes>
@@ -70,8 +70,8 @@ function App() {
                     <Route path="games/:gameId/details" element={<GameDetails />} />
                     <Route path={Path.Logout} element={<Logout />} />
                 </Routes>
-            </AuthContext.Provider>
-        </div>
+            </div>
+        </AuthProvider>
     )
 }
 
