@@ -1,11 +1,13 @@
-import { useContext, useEffect, useReducer, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useContext, useEffect, useReducer, useState, useMemo } from "react";
+import { Link, useParams } from "react-router-dom";
 
 import * as gameService from '../../services/gameService';
 import * as commentService from '../../services/commentService';
 import AuthContext from "../../contexts/authContext";
-import reducer from "./commentReduser";
+import reducer from './commentReducer';
 import useForm from '../../hooks/useForm';
+import { pathToUrl } from "../../utils/pathUtils";
+import Path from "../../paths";
 
 export default function GameDetails() {
     const { email, userId } = useContext(AuthContext);
@@ -23,33 +25,37 @@ export default function GameDetails() {
                 dispatch({
                     type: 'GET_ALL_COMMENTS',
                     payload: result,
-                })
+                });
             });
     }, [gameId]);
-
 
     const addCommentHandler = async (values) => {
         const newComment = await commentService.create(
             gameId,
-            values.comment,
+            values.comment
         );
+
         newComment.owner = { email };
+
         // setComments(state => [...state, { ...newComment, author: { email } }]);
+
         dispatch({
             type: 'ADD_COMMENT',
-            payload: newComment,
+            payload: newComment
         })
-    };
+    }
 
-    const { values, onChange, onSubmit } = useForm(addCommentHandler, {
+    // TODO: temp solution for form reinitialization
+    const initialValues = useMemo(() => ({
         comment: '',
-    });
+    }), [])
+
+    const { values, onChange, onSubmit } = useForm(addCommentHandler, initialValues);
 
     return (
         <section id="game-details">
             <h1>Game Details</h1>
             <div className="info-section">
-
                 <div className="game-header">
                     <img className="game-img" src={game.imageUrl} alt={game.title} />
                     <h1>{game.title}</h1>
@@ -67,21 +73,17 @@ export default function GameDetails() {
                                 <p>{email}: {text}</p>
                             </li>
                         ))}
-
-                        {/* {comments.map(({ _id, text, owner }) => (
-                            <li key={_id} className="comment">
-                                <p>{owner.email}: {text}</p>
-                            </li>
-                        ))} */}
                     </ul>
 
-                    {comments.length === 0 && <p className="no-comment">No comments.</p>}
+                    {comments.length === 0 && (
+                        <p className="no-comment">No comments.</p>
+                    )}
                 </div>
 
                 {userId === game._ownerId && (
                     <div className="buttons">
-                        <a href="#" className="button">Edit</a>
-                        <a href="#" className="button">Delete</a>
+                        <Link to={pathToUrl(Path.GameEdit, { gameId })} className="button">Edit</Link>
+                        <Link to="/games/:gameId/delete" className="button">Delete</Link>
                     </div>
                 )}
             </div>
@@ -93,7 +95,6 @@ export default function GameDetails() {
                     <input className="btn submit" type="submit" value="Add Comment" />
                 </form>
             </article>
-
         </section>
     );
-} 
+}
